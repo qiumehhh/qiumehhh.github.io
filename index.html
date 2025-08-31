@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mahjong Scoreboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background: #f9f9f9; }
+    h1 { color: #2c3e50; }
+    .container { background: #fff; padding: 20px; border-radius: 10px; max-width: 800px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, select, button { margin-top: 5px; padding: 8px; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #ecf0f1; }
+    .totals { margin-top: 20px; padding: 15px; background: #ecf0f1; border-radius: 8px; font-weight: bold; }
+    span.delete { cursor: pointer; color: red; font-weight: bold; margin-left: 5px; }
+    /* Small reset button */
+    button.small-reset {
+      width: 150px;
+      padding: 5px;
+      font-size: 0.8em;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button.small-reset:hover {
+      background: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <!-- Player & Game Settings -->
+  <div class="container">
+    <h1>Mahjong Scoreboard</h1>
+
+    <label>Player Names</label>
+    <input type="text" id="p1" placeholder="Player 1">
+    <input type="text" id="p2" placeholder="Player 2">
+    <input type="text" id="p3" placeholder="Player 3">
+    <input type="text" id="p4" placeholder="Player 4">
+
+    <label for="rate">Game Rate</label>
+    <select id="rate">
+      <option value="10_20">10¢ / 20¢</option>
+      <option value="20_40">20¢ / 40¢</option>
+      <option value="30_60" selected>30¢ / 60¢</option>
+      <option value="50_1">50¢ / $1</option>
+      <option value="1_2">$1 / $2</option>
+    </select>
+
+    <hr>
+    <h2>New Round</h2>
+
+    <label for="winner">Winner</label>
+    <select id="winner">
+      <option value="p1">Player 1</option>
+      <option value="p2">Player 2</option>
+      <option value="p3">Player 3</option>
+      <option value="p4">Player 4</option>
+    </select>
+
+    <label for="tai">Number of Tai (1–5)</label>
+    <select id="tai">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+    </select>
+
+    <label for="winType">Win Type</label>
+    <select id="winType" onchange="toggleShooterDropdown()">
+      <option value="shooter">Shooter Pay</option>
+      <option value="selfdraw">Self-Draw</option>
+    </select>
+
+    <div id="shooterDiv" style="display:block;">
+      <label for="shooter">Shooter (Discarder)</label>
+      <select id="shooter">
+        <option value="p1">Player 1</option>
+        <option value="p2">Player 2</option>
+        <option value="p3">Player 3</option>
+        <option value="p4">Player 4</option>
+      </select>
+    </div>
+
+    <button onclick="addRound()">Add Round</button>
+  </div>
+
+  <!-- Scoreboard -->
+  <div class="container">
+    <h2>Scoreboard</h2>
+    <table id="scoreTable">
+      <thead>
+        <tr>
+          <th>Round</th>
+          <th>Winner</th>
+          <th>Details</th>
+          <th>P1</th>
+          <th>P2</th>
+          <th>P3</th>
+          <th>P4</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="totals" id="totals"></div>
+
+    <!-- Divide payout dropdown below scoreboard -->
+    <label for="divideBy">Divide payout among</label>
+    <select id="divideBy">
+      <option value="1">1 (No division)</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select>
+
+    <!-- Smaller Reset button -->
+    <button class="small-reset" onclick="resetAllRounds()">Reset All Rounds</button>
+  </div>
+
+  <script>
+    const payoutTables = {
+      "10_20": {1:{s:0.40, d:0.20},2:{s:0.80,d:0.40},3:{s:1.60,d:0.80},4:{s:3.20,d:1.60},5:{s:6.40,d:3.20}},
+      "20_40": {1:{s:0.80, d:0.40},2:{s:1.60,d:0.80},3:{s:3.20,d:1.60},4:{s:6.40,d:3.20},5:{s:12.80,d:6.40}},
+      "30_60": {1:{s:4, d:2},2:{s:7,d:3},3:{s:11,d:5},4:{s:20,d:10},5:{s:40,d:20}},
+      "50_1": {1:{s:2, d:1},2:{s:4,d:2},3:{s:8,d:4},4:{s:16,d:8},5:{s:32,d:16}},
+      "1_2": {1:{s:4, d:2},2:{s:8,d:4},3:{s:16,d:8},4:{s:32,d:16},5:{s:64,d:32}}
+    };
+
+    let roundNumber = 0;
+    let totals = {p1:0,p2:0,p3:0,p4:0};
+
+    function updateTotalsDisplay() {
+      const names = {
+        p1: document.getElementById('p1').value || "Player 1",
+        p2: document.getElementById('p2').value || "Player 2",
+        p3: document.getElementById('p3').value || "Player 3",
+        p4: document.getElementById('p4').value || "Player 4"
+      };
+
+      const totalPayout = totals.p1 + totals.p2 + totals.p3 + totals.p4;
+
+      document.getElementById("totals").innerHTML =
+        `Totals: ${names.p1} $${totals.p1.toFixed(2)} | 
+                 ${names.p2} $${totals.p2.toFixed(2)} | 
+                 ${names.p3} $${totals.p3.toFixed(2)} | 
+                 ${names.p4} $${totals.p4.toFixed(2)} <br>
+         <strong>Total Payout After Division: $${totalPayout.toFixed(2)}</strong>`;
+    }
+
+    function deleteRound(row) {
+      const delta = JSON.parse(row.dataset.delta);
+      for (let p in totals) totals[p] -= delta[p]; 
+      row.remove();
+      updateTotalsDisplay();
+    }
+
+    function toggleShooterDropdown() {
+      const winType = document.getElementById('winType').value;
+      const shooterDiv = document.getElementById('shooterDiv');
+
+      if (winType === "shooter") {
+        shooterDiv.style.display = "block";
+        const winner = document.getElementById('winner').value;
+        const shooterSelect = document.getElementById('shooter');
+        for (let option of shooterSelect.options) {
+          if (option.value !== winner) {
+            shooterSelect.value = option.value;
+            break;
+          }
+        }
+      } else {
+        shooterDiv.style.display = "none";
+      }
+    }
+
+    document.getElementById('winner').addEventListener('change', toggleShooterDropdown);
+
+    function addRound() {
+      const names = {
+        p1: document.getElementById('p1').value || "Player 1",
+        p2: document.getElementById('p2').value || "Player 2",
+        p3: document.getElementById('p3').value || "Player 3",
+        p4: document.getElementById('p4').value || "Player 4"
+      };
+
+      const winner = document.getElementById('winner').value;
+      const tai = parseInt(document.getElementById('tai').value);
+      const rate = document.getElementById('rate').value;
+      const divideBy = parseInt(document.getElementById('divideBy').value);
+      const winType = document.getElementById('winType').value;
+      const payout = payoutTables[rate][tai];
+
+      roundNumber++;
+      let delta = {p1:0,p2:0,p3:0,p4:0};
+      let detail = "";
+
+      if (winType === "shooter") {
+        const shooter = document.getElementById('shooter').value;
+        if (shooter === winner) { alert("Winner cannot be the shooter!"); return; }
+        delta[winner] += payout.s / divideBy;
+        delta[shooter] -= payout.s / divideBy;
+        detail = `${names[winner]} wins ${tai} tai, ${names[shooter]} pays $${(payout.s/divideBy).toFixed(2)}`;
+      } else {
+        const others = ["p1","p2","p3","p4"].filter(p => p!==winner);
+        const eachPays = payout.d / divideBy;
+        for (let p of others) delta[p] -= eachPays;
+        delta[winner] = eachPays * others.length;
+        detail = `${names[winner]} wins ${tai} tai self-draw, each pays $${eachPays.toFixed(2)}`;
+      }
+
+      for (let p in totals) totals[p]+=delta[p];
+
+      const row = document.createElement("tr");
+      row.dataset.delta = JSON.stringify(delta);
+      row.innerHTML = `
+        <td>${roundNumber} <span class="delete">🗑️</span></td>
+        <td>${names[winner]}</td>
+        <td>${detail}</td>
+        <td>${delta.p1.toFixed(2)}</td>
+        <td>${delta.p2.toFixed(2)}</td>
+        <td>${delta.p3.toFixed(2)}</td>
+        <td>${delta.p4.toFixed(2)}</td>
+      `;
+      document.querySelector("#scoreTable tbody").appendChild(row);
+
+      row.querySelector(".delete").addEventListener("click", function() {
+        deleteRound(row);
+      });
+
+      updateTotalsDisplay();
+    }
+
+    function resetAllRounds() {
+      document.querySelector("#scoreTable tbody").innerHTML = "";
+      totals = {p1:0,p2:0,p3:0,p4:0};
+      roundNumber = 0;
+      updateTotalsDisplay();
+    }
+  </script>
+</body>
+</html>
+
