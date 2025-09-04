@@ -1,170 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Mahjong Scoreboard</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
-  h1, h2 { color: #2c3e50; }
-  .container { background: #fff; padding: 20px; border-radius: 10px; max-width: 900px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+  :root{
+    --bg:#f9f9f9; --card:#fff; --muted:#ecf0f1; --text:#2c3e50;
+    --shadow:0 2px 8px rgba(0,0,0,0.08);
+    --pill:#eef3ff; --pill-border:#cfd9ff;
+  }
+  body { font-family: Arial, sans-serif; margin: 20px; background: var(--bg); color: var(--text); }
+  h1, h2 { color: var(--text); margin: 0 0 12px; }
+  .container { background: var(--card); padding: 16px; border-radius: 12px; max-width: 980px; box-shadow: var(--shadow); margin: 16px auto; }
   label { display: block; margin-top: 10px; font-weight: bold; }
-  input, select, button { margin-top: 5px; padding: 8px; width: 100%; }
-  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-  th { background: #ecf0f1; }
-  .totals { margin-top: 20px; padding: 15px; background: #ecf0f1; border-radius: 8px; font-weight: bold; }
-  .small-btn { padding: 5px 10px; font-size: 0.8em; margin-left:5px; }
-@media (max-width: 600px) {
-      body {
-        font-size: 14px;
-        padding: 5px;
-      }
+  input, select, button { margin-top: 6px; padding: 10px; width: 100%; border-radius: 8px; border: 1px solid #ddd; }
+  button { cursor: pointer; }
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .row-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .muted { background: var(--muted); padding: 10px; border-radius: 8px; }
+  .small-btn { padding: 6px 10px; font-size: 0.85em; width: auto; }
+  .danger { background: #ffe8e8; border: 1px solid #ffc9c9; }
+  .flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .inline { display:inline-flex; gap:8px; align-items:center; }
+  .right { display:flex; justify-content:flex-end; gap:8px; }
+  .spacer { height: 6px; }
 
-      input, select, button {
-        width: 100%;
-        margin: 4px 0;
-        font-size: 14px;
-        padding: 6px;
-      }
+  details { border: 1px solid #e6e6e6; border-radius: 10px; padding: 10px; background: #fff; }
+  details > summary { cursor: pointer; font-weight: 700; padding: 6px 0; outline: none; }
+  details[open] > summary { margin-bottom: 8px; }
+  
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: center; vertical-align: top; }
+  th { background: var(--muted); }
+  .totals { margin-top: 10px; padding: 10px; background: var(--muted); border-radius: 8px; font-weight: bold; }
+  #whoPaysWho { margin-top: 10px; max-height: 220px; overflow-y: auto; }
 
-      table {
-        font-size: 12px;
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-      }
+  /* Event pills inside Details cell */
+  .evwrap { text-align: left; }
+  .evactions { margin-bottom: 8px; }
+  .evlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .evitem { display:flex; justify-content: space-between; align-items:center; gap:8px; padding: 6px 8px; border:1px solid var(--pill-border); background: var(--pill); border-radius: 8px; }
+  .evtext { font-size: 0.9em; }
+  .trash { border:none; background:transparent; font-size: 1.1em; cursor:pointer; }
 
-      button {
-        border-radius: 8px;
-        padding: 8px;
-      }
-
-      #whoPaysWho {
-        font-size: 13px;
-      }
-    }
+  @media (max-width: 800px){
+    .row { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 520px){
+    body { margin: 10px; }
+    table { font-size: 12px; display:block; overflow-x:auto; white-space:nowrap; }
+    .row { grid-template-columns: 1fr; }
+    .row-2 { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
-
 <div class="container">
   <h1>Mahjong Scoreboard</h1>
 
-  <!-- Player Names & Animal Assignment -->
-  <label>Player Names & Animals</label>
-  <div id="playerSetup">
-    <input type="text" id="p1" placeholder="Player 1"> 
+  <!-- Player Names (collapsible, open by default) -->
+  <details open>
+    <summary>Player Names</summary>
+    <div class="row">
+      <div><label>Player 1</label><input id="p1Name" placeholder="Player 1" /></div>
+      <div><label>Player 2</label><input id="p2Name" placeholder="Player 2" /></div>
+      <div><label>Player 3</label><input id="p3Name" placeholder="Player 3" /></div>
+      <div><label>Player 4</label><input id="p4Name" placeholder="Player 4" /></div>
+    </div>
+  </details>
 
-    <input type="text" id="p2" placeholder="Player 2">
+  <div class="spacer"></div>
 
-    <input type="text" id="p3" placeholder="Player 3">
+  <!-- House Rules (collapsible, open by default) -->
+  <details open>
+    <summary>House Rules Config (Special Events)</summary>
+    <div class="row-2">
+      <div class="muted">
+        <strong>Animal Payouts</strong>
+        <label>Start of Game</label><input id="animalStart" type="number" step="0.01" value="2" />
+        <label>In-Game</label><input id="animalIn" type="number" step="0.01" value="1" />
+        <small>Animal Pair uses the same payout as Own Animal.</small>
+      </div>
+      <div class="muted">
+        <strong>Flower Payouts</strong>
+        <label>Start of Game</label><input id="flowerStart" type="number" step="0.01" value="2" />
+        <label>In-Game</label><input id="flowerIn" type="number" step="0.01" value="1" />
+      </div>
+    </div>
+    <div class="row-2" style="margin-top:10px;">
+      <div class="muted">
+        <strong>Gang Payouts</strong>
+        <label>Concealed Gang (everyone pays)</label><input id="gangConcealed" type="number" step="0.01" value="2" />
+        <label>Revealed Gang (shooter pays)</label><input id="gangRevealed" type="number" step="0.01" value="3" />
+      </div>
+      <div></div>
+    </div>
+  </details>
+</div>
 
-    <input type="text" id="p4" placeholder="Player 4">
+<!-- Special Events -->
+<div class="container">
+  <h2>Special Events (appear in next round row)</h2>
+  <div class="row-2">
+    <div>
+      <label>Player</label>
+      <select id="eventPlayer">
+        <option value="p1">Player 1</option>
+        <option value="p2">Player 2</option>
+        <option value="p3">Player 3</option>
+        <option value="p4">Player 4</option>
+      </select>
+    </div>
+    <div>
+      <label>Event Type</label>
+      <select id="eventType" onchange="updateEventDetailOptions()">
+        <option value="animal">Animal</option>
+        <option value="flower">Flower</option>
+        <option value="gang">Gang</option>
+      </select>
+    </div>
   </div>
 
-  <!-- House Rules Configuration -->
-  <h2>House Rules Config</h2>
-  <label>Animal Payouts</label>
-  <input type="number" id="animalStart" placeholder="Start-of-Game Payout">
-  <input type="number" id="animalIn" placeholder="In-Game Payout">
+  <div class="row-2">
+    <div>
+      <label>Event Detail</label>
+      <select id="eventDetail"></select>
+    </div>
+    <div id="timingWrap">
+      <label>Timing</label>
+      <select id="eventTiming">
+        <option value="start">Start-of-Game</option>
+        <option value="in">In-Game</option>
+      </select>
+    </div>
+  </div>
 
-  <label>Flower Payouts</label>
-  <input type="number" id="flowerStart" placeholder="Start-of-Game Payout">
-  <input type="number" id="flowerIn" placeholder="In-Game Payout">
+  <div class="row-2" id="shootWrap" style="display:none;">
+    <div>
+      <label>Shooter (for Revealed Gang)</label>
+      <select id="eventShooter">
+        <option value="p1">Player 1</option>
+        <option value="p2">Player 2</option>
+        <option value="p3">Player 3</option>
+        <option value="p4">Player 4</option>
+      </select>
+    </div>
+    <div></div>
+  </div>
 
-  <label>Gang Payouts</label>
-  <input type="number" id="gangConcealed" placeholder="Concealed Gang">
-  <input type="number" id="gangRevealed" placeholder="Revealed Gang (Shooter Pay)">
+  <div class="row-2" id="payerWrap" style="display:none;">
+    <div>
+      <label>Specific Payer (for Flower: Same Number)</label>
+      <select id="eventPayer">
+        <option value="p1">Player 1</option>
+        <option value="p2">Player 2</option>
+        <option value="p3">Player 3</option>
+        <option value="p4">Player 4</option>
+      </select>
+    </div>
+    <div></div>
+  </div>
+
+  <div class="right" style="margin-top:10px;">
+    <button class="small-btn" onclick="addEvent()">Add Event</button>
+  </div>
 </div>
 
-<!-- Special Events Section -->
-<div class="container">
-  <h2>Special Events (Animals, Flowers, Gang)</h2>
-
-  <label>Player</label>
-  <select id="eventPlayer">
-    <option value="p1">Player 1</option>
-    <option value="p2">Player 2</option>
-    <option value="p3">Player 3</option>
-    <option value="p4">Player 4</option>
-  </select>
-
-  <label>Event Type</label>
-  <select id="eventType" onchange="updateEventDetailOptions()">
-    <option value="animal">Animal</option>
-    <option value="flower">Flower</option>
-    <option value="gang">Gang</option>
-  </select>
-
-  <label>Event Detail</label>
-  <select id="eventDetail"></select>
-
-  <label id="timingLabel">Timing</label>
-  <select id="eventTiming">
-    <option value="start">Start-of-Game</option>
-    <option value="in">In-Game</option>
-  </select>
-
-  <label id="shooterLabel">Shooter (if Revealed Gang)</label>
-  <select id="eventShooter">
-    <option value="p1">Player 1</option>
-    <option value="p2">Player 2</option>
-    <option value="p3">Player 3</option>
-    <option value="p4">Player 4</option>
-  </select>
-
-  <button onclick="addEvent()">Add Event</button>
-</div>
-
-<!-- New Round Section -->
+<!-- New Round -->
 <div class="container">
   <h2>New Round</h2>
 
-  <label>Winner</label>
-  <select id="winner">
-    <option value="p1">Player 1</option>
-    <option value="p2">Player 2</option>
-    <option value="p3">Player 3</option>
-    <option value="p4">Player 4</option>
-  </select>
-
-  <label>Number of Tai (1–5)</label>
-  <select id="tai">
-    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-    <option value="4">4</option><option value="5">5</option>
-  </select>
-
-  <label>Win Type</label>
-  <select id="winType" onchange="toggleShooterDropdown()">
-    <option value="shooter">Shooter Pay</option>
-    <option value="selfdraw">Self-Draw</option>
-  </select>
-
-  <div id="shooterDiv" style="display:block;">
-    <label>Shooter (Discarder)</label>
-    <select id="shooter">
-      <option value="p1">Player 1</option>
-      <option value="p2">Player 2</option>
-      <option value="p3">Player 3</option>
-      <option value="p4">Player 4</option>
-    </select>
+  <div class="row-2">
+    <div>
+      <label>Game Rate</label>
+      <select id="rate">
+        <option value="10_20">10¢ / 20¢</option>
+        <option value="20_40">20¢ / 40¢</option>
+        <option value="30_60" selected>30¢ / 60¢</option>
+        <option value="50_1">50¢ / $1</option>
+        <option value="1_2">$1 / $2</option>
+      </select>
+    </div>
+    <div>
+      <label>Number of Tai (1–5)</label>
+      <select id="tai">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+        <option value="4">4</option><option value="5">5</option>
+      </select>
+    </div>
   </div>
 
-  <label>Game Rate</label>
-  <select id="rate">
-    <option value="10_20">10¢ / 20¢</option>
-    <option value="20_40">20¢ / 40¢</option>
-    <option value="30_60" selected>30¢ / 60¢</option>
-    <option value="50_1">50¢ / $1</option>
-    <option value="1_2">$1 / $2</option>
-  </select>
-
-  <button onclick="addRound()">Add Round</button>
+  <div class="row-2">
+    <div>
+      <label>Win Type</label>
+      <select id="winType" onchange="toggleShooterDropdown()">
+        <option value="shooter">Shooter Pay</option>
+        <option value="selfdraw">Self-Draw</option>
+      </select>
+    </div>
+    <div class="row-2">
+      <div>
+        <label>Winner</label>
+        <select id="winner">
+          <option value="p1">Player 1</option>
+          <option value="p2">Player 2</option>
+          <option value="p3">Player 3</option>
+          <option value="p4">Player 4</option>
+        </select>
+      </div>
+      <div class="right" style="align-items:end;">
+        <button onclick="addRound()">Add Round</button>
+      </div>
+    </div>
+    <div id="shooterDiv">
+      <label>Shooter (Discarder)</label>
+      <select id="shooter">
+        <option value="p1">Player 1</option>
+        <option value="p2">Player 2</option>
+        <option value="p3">Player 3</option>
+        <option value="p4">Player 4</option>
+      </select>
+    </div>
+  </div>
 </div>
 
-<!-- Scoreboard Section -->
+<!-- Scoreboard -->
 <div class="container">
   <h2>Scoreboard</h2>
   <table id="scoreTable">
@@ -172,305 +234,428 @@
       <tr>
         <th>Round</th>
         <th>Winner</th>
-        <th>Details</th>
-        <th>P1</th>
-        <th>P2</th>
-        <th>P3</th>
-        <th>P4</th>
+        <th>Details (events & round)</th>
+        <th>P1</th><th>P2</th><th>P3</th><th>P4</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <div class="totals" id="totals">Totals: 0 | 0 | 0 | 0</div>
+  <div class="totals" id="totals">Totals: 0.00 | 0.00 | 0.00 | 0.00</div>
 
-  <label>Divide Payout</label>
-  <select id="dividePayout" onchange="updateDivideTotals()">
-    <option value="1">No Divide</option>
-    <option value="2">/2</option>
-    <option value="3">/3</option>
-    <option value="4">/4</option>
-  </select>
+  <div class="row-2">
+    <div>
+      <label>Divide Payout</label>
+      <select id="divide" onchange="updateTotalsDisplay()">
+        <option value="1">No Divide</option>
+        <option value="2">/2</option>
+        <option value="3">/3</option>
+        <option value="4">/4</option>
+      </select>
+    </div>
+    <div class="right" style="align-items:end;">
+      <button class="small-btn" onclick="calculateSettlement()">Calculate Settlement</button>
+      <button class="small-btn danger" onclick="resetAllRounds()">Reset All</button>
+    </div>
+  </div>
 
-  <div id="divideTotals" class="totals"></div>
-  <button onclick="calculateSettlement()">Calculate Settlement</button>
-<div id="whoPaysWho" style="margin-top:10px; max-height:200px; overflow-y:auto;"></div>
-  <button onclick="resetAllRounds()" class="small-btn">Reset All Rounds</button>
+  <div id="whoPaysWho"></div>
 </div>
 <script>
-  // ======== Global Variables ========
-  let roundNumber = 0;
-  let totals = {p1:0,p2:0,p3:0,p4:0};
-  let assignedAnimals = {};
-  
-  // Default payout tables for normal rounds
+  // ---------- Game rate payout tables (for normal rounds only) ----------
   const payoutTables = {
     "10_20": {1:{s:0.40,d:0.20},2:{s:0.80,d:0.40},3:{s:1.60,d:0.80},4:{s:3.20,d:1.60},5:{s:6.40,d:3.20}},
     "20_40": {1:{s:0.80,d:0.40},2:{s:1.60,d:0.80},3:{s:3.20,d:1.60},4:{s:6.40,d:3.20},5:{s:12.80,d:6.40}},
     "30_60": {1:{s:4,d:2},2:{s:7,d:3},3:{s:11,d:5},4:{s:20,d:10},5:{s:40,d:20}},
-    "50_1": {1:{s:2,d:1},2:{s:4,d:2},3:{s:8,d:4},4:{s:16,d:8},5:{s:32,d:16}},
-    "1_2": {1:{s:4,d:2},2:{s:8,d:4},3:{s:16,d:8},4:{s:32,d:16},5:{s:64,d:32}}
+    "50_1":  {1:{s:2,d:1},2:{s:4,d:2},3:{s:8,d:4},4:{s:16,d:8},5:{s:32,d:16}},
+    "1_2":   {1:{s:4,d:2},2:{s:8,d:4},3:{s:16,d:8},4:{s:32,d:16},5:{s:64,d:32}}
   };
-  
-  // ======== Utility Functions ========
-  
-  // Get player names
-  function getPlayerNames(){
+
+  // ---------- Global state ----------
+  let currentRound = 0; // last completed normal round number
+  const rounds = {};    // roundNo -> { row, cells, delta, events[], hasWinner, winnerDelta }
+  let totals = { p1:0, p2:0, p3:0, p4:0 };
+
+  // ---------- Utilities ----------
+  function names() {
     return {
-      p1: document.getElementById('p1').value || "Player 1",
-      p2: document.getElementById('p2').value || "Player 2",
-      p3: document.getElementById('p3').value || "Player 3",
-      p4: document.getElementById('p4').value || "Player 4"
+      p1: document.getElementById('p1Name').value || 'Player 1',
+      p2: document.getElementById('p2Name').value || 'Player 2',
+      p3: document.getElementById('p3Name').value || 'Player 3',
+      p4: document.getElementById('p4Name').value || 'Player 4',
     };
   }
-  
-  // Get assigned animals
-  function updateAssignedAnimals(){
-    // assignedAnimals = {
-    //   p1: document.getElementById('a1').value,
-    //   p2: document.getElementById('a2').value,
-    //   p3: document.getElementById('a3').value,
-    //   p4: document.getElementById('a4').value
-    // };
+  function fmt(n){ return (Number(n).toFixed(2)); }
+  function applyTotals(delta, sign=1){
+    for(const k of ['p1','p2','p3','p4']) totals[k] += (delta[k]||0) * sign;
+    updateTotalsDisplay();
   }
-  
-  // Update event detail options based on type
+  function updateTotalsDisplay(){
+    const divide = parseInt(document.getElementById('divide').value)||1;
+    const n = names();
+    const t = {
+      p1: totals.p1/divide, p2: totals.p2/divide, p3: totals.p3/divide, p4: totals.p4/divide
+    };
+    document.getElementById('totals').innerHTML =
+      `Totals (÷${divide}): ${n.p1} $${fmt(t.p1)} | ${n.p2} $${fmt(t.p2)} | ${n.p3} $${fmt(t.p3)} | ${n.p4} $${fmt(t.p4)}`;
+    // clear previous settlement on any change
+    document.getElementById('whoPaysWho').innerHTML = '';
+    // also refresh all row number cells if names changed
+    for(const r in rounds){ updateRoundRowNumbers(+r); }
+  }
+
+  // Ensure a row exists for a given round number
+  function ensureRoundRow(roundNo){
+    if(rounds[roundNo]) return rounds[roundNo];
+    const tbody = document.querySelector('#scoreTable tbody');
+    const tr = document.createElement('tr');
+
+    const tdRound = document.createElement('td');
+    tdRound.textContent = roundNo;
+
+    const tdWinner = document.createElement('td');
+    tdWinner.textContent = '—';
+
+    const tdDetails = document.createElement('td');
+    const evWrap = document.createElement('div');
+    evWrap.className = 'evwrap';
+    const evActions = document.createElement('div');
+    evActions.className = 'evactions';
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'small-btn';
+    toggleBtn.textContent = 'Hide events';
+    toggleBtn.onclick = () => {
+      const hidden = evList.style.display === 'none';
+      evList.style.display = hidden ? '' : 'none';
+      toggleBtn.textContent = hidden ? 'Hide events' : 'Show events';
+    };
+    evActions.appendChild(toggleBtn);
+    const evList = document.createElement('ul');
+    evList.className = 'evlist';
+    evWrap.appendChild(evActions);
+    evWrap.appendChild(evList);
+    tdDetails.appendChild(evWrap);
+
+    const tdP1 = document.createElement('td');
+    const tdP2 = document.createElement('td');
+    const tdP3 = document.createElement('td');
+    const tdP4 = document.createElement('td');
+    tdP1.textContent = tdP2.textContent = tdP3.textContent = tdP4.textContent = '0.00';
+
+    tr.appendChild(tdRound);
+    tr.appendChild(tdWinner);
+    tr.appendChild(tdDetails);
+    tr.appendChild(tdP1);
+    tr.appendChild(tdP2);
+    tr.appendChild(tdP3);
+    tr.appendChild(tdP4);
+
+    tbody.appendChild(tr);
+
+    rounds[roundNo] = {
+      row: tr,
+      cells: { round: tdRound, winner: tdWinner, details: tdDetails, evList, p1: tdP1, p2: tdP2, p3: tdP3, p4: tdP4 },
+      delta: { p1:0,p2:0,p3:0,p4:0 },
+      events: [],
+      hasWinner: false,
+      winnerDelta: { p1:0,p2:0,p3:0,p4:0 },
+    };
+    return rounds[roundNo];
+  }
+
+  function updateRoundRowNumbers(roundNo){
+    const r = rounds[roundNo];
+    if(!r) return;
+    r.cells.p1.textContent = fmt(r.delta.p1);
+    r.cells.p2.textContent = fmt(r.delta.p2);
+    r.cells.p3.textContent = fmt(r.delta.p3);
+    r.cells.p4.textContent = fmt(r.delta.p4);
+  }
+
+  // UI toggles for special event selectors
   function updateEventDetailOptions(){
     const type = document.getElementById('eventType').value;
     const detail = document.getElementById('eventDetail');
+    const timingWrap = document.getElementById('timingWrap');
+    const shootWrap = document.getElementById('shootWrap');
+    const payerWrap = document.getElementById('payerWrap');
+
     detail.innerHTML = '';
-    if(type==='animal'){
-      detail.innerHTML = '<option value="own">Own Animal</option><option value="pair">Animal Pair</option>';
-      document.getElementById('eventTiming').style.display='block';
-      document.getElementById('timingLabel').style.display='block';
-      document.getElementById('shooterLabel').style.display='none';
-      document.getElementById('eventShooter').style.display='none';
-    }else if(type==='flower'){
-      detail.innerHTML = '<option value="own">Own Number</option><option value="same">Same Number</option>';
-      document.getElementById('eventTiming').style.display='block';
-      document.getElementById('timingLabel').style.display='block';
-      document.getElementById('shooterLabel').style.display='none';
-      document.getElementById('eventShooter').style.display='none';
-    }else if(type==='gang'){
-      detail.innerHTML = '<option value="concealed">Concealed Gang</option><option value="revealed">Revealed Gang</option>';
-      document.getElementById('eventTiming').style.display='none';
-      document.getElementById('timingLabel').style.display='none';
-      document.getElementById('shooterLabel').style.display='block';
-      document.getElementById('eventShooter').style.display='block';
+    payerWrap.style.display = 'none';
+    shootWrap.style.display = 'none';
+
+    if(type === 'animal'){
+      detail.innerHTML = `
+        <option value="own">Own Animal</option>
+        <option value="pair">Animal Pair</option>
+      `;
+      timingWrap.style.display = '';
+    } else if(type === 'flower'){
+      detail.innerHTML = `
+        <option value="own">Own Number</option>
+        <option value="same">Same Number (pick payer)</option>
+      `;
+      timingWrap.style.display = '';
+    } else { // gang
+      detail.innerHTML = `
+        <option value="concealed">Concealed Gang</option>
+        <option value="revealed">Revealed Gang</option>
+      `;
+      timingWrap.style.display = 'none';
+    }
+
+    detail.onchange = () => {
+      const dv = detail.value;
+      payerWrap.style.display = (type==='flower' && dv==='same') ? '' : 'none';
+      shootWrap.style.display = (type==='gang' && dv==='revealed') ? '' : 'none';
+    };
+    // initialize visibility
+    detail.dispatchEvent(new Event('change'));
+  }
+
+  function toggleShooterDropdown(){
+    const val = document.getElementById('winType').value;
+    document.getElementById('shooterDiv').style.display = (val === 'shooter') ? '' : 'none';
+  }
+
+  // Initialize on load
+  window.addEventListener('load', () => {
+    updateEventDetailOptions();
+    toggleShooterDropdown();
+    updateTotalsDisplay();
+  });
+</script>
+<script>
+  // ----- Build per-event delta given inputs -----
+  function buildEventDelta({type, timing, player, shooter, payer}) {
+    const animalStart = parseFloat(document.getElementById('animalStart').value||0);
+    const animalIn    = parseFloat(document.getElementById('animalIn').value||0);
+    const flowerStart = parseFloat(document.getElementById('flowerStart').value||0);
+    const flowerIn    = parseFloat(document.getElementById('flowerIn').value||0);
+    const gangCon     = parseFloat(document.getElementById('gangConcealed').value||0);
+    const gangRev     = parseFloat(document.getElementById('gangRevealed').value||0);
+
+    const amtAnimal  = (timing==='start') ? animalStart : animalIn;
+    const amtFlower  = (timing==='start') ? flowerStart : flowerIn;
+
+    const delta = { p1:0,p2:0,p3:0,p4:0 };
+    let text = '';
+
+    if(type==='animal-own' || type==='animal-pair'){
+      const amt = amtAnimal; // pair = same as own animal
+      for(const p of ['p1','p2','p3','p4']){
+        if(p!==player) delta[p] -= amt;
+        else delta[p] += amt*3;
+      }
+      text = (type==='animal-own' ? 'Animal: Own' : 'Animal: Pair') + ` (${timing}) +$${fmt(amt*3)}`;
+    }
+    else if(type==='flower-own'){
+      const amt = amtFlower;
+      for(const p of ['p1','p2','p3','p4']){
+        if(p!==player) delta[p] -= amt;
+        else delta[p] += amt*3;
+      }
+      text = `Flower: Own Number (${timing}) +$${fmt(amt*3)}`;
+    }
+    else if(type==='flower-same'){
+      const amt = amtFlower;
+      if(!payer || payer===player){
+        // if payer is not selected or equals player, do nothing special (safety)
+        return { delta, text: 'Invalid payer selection' };
+      }
+      delta[player] += amt;
+      delta[payer]  -= amt;
+      text = `Flower: Same Number (${timing}) +$${fmt(amt)} from ${names()[payer]}`;
+    }
+    else if(type==='gang-concealed'){
+      const amt = gangCon;
+      for(const p of ['p1','p2','p3','p4']){
+        if(p!==player) delta[p] -= amt;
+        else delta[p] += amt*3;
+      }
+      text = `Gang: Concealed +$${fmt(gangCon*3)}`;
+    }
+    else if(type==='gang-revealed'){
+      const amt = gangRev;
+      if(!shooter || shooter===player){
+        return { delta, text: 'Invalid shooter selection' };
+      }
+      delta[player]  += amt;
+      delta[shooter] -= amt;
+      text = `Gang: Revealed — ${names()[shooter]} pays $${fmt(amt)}`;
+    }
+    return { delta, text };
+  }
+
+  // ----- Add Special Event -----
+  function addEvent(){
+    const rNo = (currentRound === 0) ? 1 : (currentRound + 1); // events go to NEXT round number
+    const round = ensureRoundRow(rNo);
+
+    const evTypeBase = document.getElementById('eventType').value;
+    const evDetail   = document.getElementById('eventDetail').value;
+    const timing     = document.getElementById('eventTiming').value; // for animal/flower only
+    const player     = document.getElementById('eventPlayer').value;
+    const shooter    = document.getElementById('eventShooter').value;
+    const payer      = document.getElementById('eventPayer').value;
+
+    // map to internal type
+    let type = '';
+    if(evTypeBase==='animal'){
+      type = (evDetail==='pair') ? 'animal-pair' : 'animal-own';
+    } else if(evTypeBase==='flower'){
+      type = (evDetail==='same') ? 'flower-same' : 'flower-own';
+    } else {
+      type = (evDetail==='revealed') ? 'gang-revealed' : 'gang-concealed';
+    }
+
+    const { delta, text } = buildEventDelta({type, timing, player, shooter, payer});
+
+    // apply to round and totals
+    for(const k of ['p1','p2','p3','p4']) round.delta[k] += delta[k];
+    applyTotals(delta, +1);
+    updateRoundRowNumbers(rNo);
+
+    // render list item with delete
+    const li = document.createElement('li');
+    li.className = 'evitem';
+    li.innerHTML = `
+      <span class="evtext"><strong>${names()[player]}</strong> — ${text}</span>
+      <button class="trash" title="Delete">🗑️</button>
+    `;
+    round.cells.evList.appendChild(li);
+
+    const eventObj = { type, timing, player, shooter, payer, delta, li };
+    round.events.push(eventObj);
+
+    li.querySelector('.trash').onclick = () => {
+      // reverse
+      for(const k of ['p1','p2','p3','p4']) round.delta[k] -= eventObj.delta[k];
+      applyTotals(eventObj.delta, -1);
+      updateRoundRowNumbers(rNo);
+      li.remove();
+      // remove from array
+      round.events = round.events.filter(e => e !== eventObj);
+      maybeRemoveEmptyRound(rNo);
+    };
+  }
+
+  function maybeRemoveEmptyRound(rNo){
+    const r = rounds[rNo];
+    if(!r) return;
+    const emptyEvents = r.events.length === 0;
+    const emptyWinner = !r.hasWinner;
+    const zeroDelta = Math.abs(r.delta.p1)+Math.abs(r.delta.p2)+Math.abs(r.delta.p3)+Math.abs(r.delta.p4) < 0.0001;
+    if(emptyEvents && emptyWinner && zeroDelta){
+      r.row.remove();
+      delete rounds[rNo];
     }
   }
-  
-  // Update totals display
-  function updateTotals(){
-    const names = getPlayerNames();
-    const t = totals;
-    document.getElementById("totals").innerHTML = 
-      `Totals: ${names.p1} $${t.p1.toFixed(2)} | ${names.p2} $${t.p2.toFixed(2)} | ${names.p3} $${t.p3.toFixed(2)} | ${names.p4} $${t.p4.toFixed(2)}`;
-    updateDivideTotals();
-  }
-  
-  // Delete a row and adjust totals
-  function deleteRow(row, delta){
-    for(let p in delta) totals[p]-=delta[p];
-    row.remove();
-    updateTotals();
-  }
-  
-  // Toggle shooter for normal rounds
-  function toggleShooterDropdown(){
-    const winType = document.getElementById('winType').value;
-    document.getElementById('shooterDiv').style.display = (winType==="shooter")?"block":"none";
-  }
-  
-  // Update divide payout display
-  function updateDivideTotals(){
-    const divideBy = parseInt(document.getElementById('dividePayout').value);
-    const t = totals;
-    const names = getPlayerNames();
-    const dividedText = 
-      `Divided Totals (by ${divideBy}): ${names.p1} $${(t.p1/divideBy).toFixed(2)} | ${names.p2} $${(t.p2/divideBy).toFixed(2)} | ${names.p3} $${(t.p3/divideBy).toFixed(2)} | ${names.p4} $${(t.p4/divideBy).toFixed(2)}`;
-    document.getElementById('divideTotals').innerHTML = dividedText;
-  }
-  
-  // Initialize on page load
-  window.onload = function(){
-    updateEventDetailOptions();
-    updateAssignedAnimals();
-    updateDivideTotals();
-  }
-  </script>
-<script>
-  // ======== Add Normal Round ========
+
+  // ----- Add Round (normal win) -----
   function addRound(){
-    updateAssignedAnimals();
-    const names = getPlayerNames();
-    const winner = document.getElementById('winner').value;
-    const tai = parseInt(document.getElementById('tai').value);
+    const rNo = (currentRound === 0) ? 1 : (currentRound + 1);
+    const round = ensureRoundRow(rNo);
+
     const rate = document.getElementById('rate').value;
+    const tai  = Math.min(5, Math.max(1, parseInt(document.getElementById('tai').value)||1));
     const winType = document.getElementById('winType').value;
-    const payout = payoutTables[rate][tai];
-  
-    let delta = {p1:0,p2:0,p3:0,p4:0};
-    let detail = '';
-    roundNumber++;
-  
+    const winner  = document.getElementById('winner').value;
+
+    const table = payoutTables[rate];
+    const payout = table[tai]; // {s, d}
+    if(!payout){ alert('Invalid tai value.'); return; }
+
+    let delta = { p1:0,p2:0,p3:0,p4:0 };
+    let text = '';
+
     if(winType==='shooter'){
       const shooter = document.getElementById('shooter').value;
-      if(shooter===winner){ alert("Winner cannot be shooter!"); return; }
-      delta[winner]+=payout.s;
-      delta[shooter]-=payout.s;
-      detail = `${names[winner]} wins ${tai} tai, ${names[shooter]} pays $${payout.s.toFixed(2)}`;
+      if(shooter === winner){ alert('Winner cannot be the shooter.'); return; }
+      delta[winner] += payout.s;
+      delta[shooter] -= payout.s;
+      text = `Round Win: ${names()[winner]} — Shooter Pay (${tai} tai @ ${rate.replace('_','/')}), ${names()[shooter]} pays $${fmt(payout.s)}`;
     } else {
-      delta[winner]+=payout.d*3;
-      for(let p of ['p1','p2','p3','p4']){ if(p!==winner) delta[p]-=payout.d; }
-      detail = `${names[winner]} wins ${tai} tai self-draw, others pay $${payout.d.toFixed(2)}`;
+      delta[winner] += payout.d * 3;
+      for(const p of ['p1','p2','p3','p4']) if(p!==winner) delta[p] -= payout.d;
+      text = `Round Win: ${names()[winner]} — Self-Draw (${tai} tai @ ${rate.replace('_','/')}) — others pay $${fmt(payout.d)} each`;
     }
-  
-    for(let p in totals) totals[p]+=delta[p];
-  
-    const row = document.createElement('tr');
-    row.innerHTML = `<td>${roundNumber}</td><td>${names[winner]}</td><td>${detail}</td>
-                     <td>${delta.p1.toFixed(2)}</td><td>${delta.p2.toFixed(2)}</td>
-                     <td>${delta.p3.toFixed(2)}</td><td>${delta.p4.toFixed(2)}</td>`;
-  
-    // Add delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = "🗑️";
-    deleteBtn.className = "small-btn";
-    deleteBtn.onclick = ()=>deleteRow(row, delta);
-    row.cells[0].appendChild(deleteBtn);
-  
-    document.querySelector("#scoreTable tbody").appendChild(row);
-    updateTotals();
-  }
-  
-  // ======== Add Special Event ========
-  function addEvent(){
-    updateAssignedAnimals();
-    const names = getPlayerNames();
-    const player = document.getElementById('eventPlayer').value;
-    const type = document.getElementById('eventType').value;
-    const detailType = document.getElementById('eventDetail').value;
-    const timing = document.getElementById('eventTiming').value;
-    const shooter = document.getElementById('eventShooter').value;
-  
-    // House rule values
-    const animalStart = parseFloat(document.getElementById('animalStart').value);
-    const animalIn = parseFloat(document.getElementById('animalIn').value);
-    const flowerStart = parseFloat(document.getElementById('flowerStart').value);
-    const flowerIn = parseFloat(document.getElementById('flowerIn').value);
-    const gangConcealed = parseFloat(document.getElementById('gangConcealed').value);
-    const gangRevealed = parseFloat(document.getElementById('gangRevealed').value);
-  
-    let delta = {p1:0,p2:0,p3:0,p4:0};
-    let detail = '';
-    roundNumber++;
-  
-    if(type==='animal'){
-      const amt = (timing==='start') ? animalStart : animalIn;
-      if(detailType==='own'){
-        for(let p in delta){ if(p!==player) delta[p]-=amt; else delta[p]+=amt*3; }
-        detail = `${names[player]} drew Own Animal (${timing}) +$${amt*3}`;
-      } else { // pair
-        const total = amt*2;
-        for(let p in delta){ if(p!==player) delta[p]-=total; else delta[p]+=total*3; }
-        detail = `${names[player]} drew Animal Pair (${timing}) +$${total*3}`;
-      }
-    } else if(type==='flower'){
-      const amt = (timing==='start') ? flowerStart : flowerIn;
-      if(detailType==='own'){
-        for(let p in delta){ if(p!==player) delta[p]-=amt; else delta[p]+=amt*3; }
-        detail = `${names[player]} drew Flower Own Number (${timing}) +$${amt*3}`;
-      } else { // same
-        const total = amt;
-        let payer=''; 
-        for(let p of ['p1','p2','p3','p4']){ if(p!==player){ payer=p; break; } }
-        delta[player]+=total; delta[payer]-=total;
-        detail = `${names[player]} drew Flower Same Number (${timing}) +$${total} from ${names[payer]}`;
-      }
-    } else if(type==='gang'){
-      if(detailType==='concealed'){
-        for(let p in delta){ if(p!==player) delta[p]-=gangConcealed; else delta[p]+=gangConcealed*3; }
-        detail = `${names[player]} did Concealed Gang +$${gangConcealed*3}`;
-      } else {
-        delta[player]+=gangRevealed;
-        delta[shooter]-=gangRevealed;
-        detail = `${names[player]} did Revealed Gang, ${names[shooter]} pays $${gangRevealed}`;
-      }
+
+    // apply to round and totals
+    for(const k of ['p1','p2','p3','p4']) {
+      round.delta[k] += delta[k];
+      round.winnerDelta[k] += delta[k];
     }
-  
-    for(let p in totals) totals[p]+=delta[p];
-  
-    const row = document.createElement('tr');
-    row.innerHTML = `<td>${roundNumber}</td><td>${names[player]}</td><td>${detail}</td>
-                     <td>${delta.p1.toFixed(2)}</td><td>${delta.p2.toFixed(2)}</td>
-                     <td>${delta.p3.toFixed(2)}</td><td>${delta.p4.toFixed(2)}</td>`;
-  
-    // Delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = "🗑️";
-    deleteBtn.className = "small-btn";
-    deleteBtn.onclick = ()=>deleteRow(row, delta);
-    row.cells[0].appendChild(deleteBtn);
-  
-    document.querySelector("#scoreTable tbody").appendChild(row);
-    updateTotals();
+    applyTotals(delta, +1);
+    updateRoundRowNumbers(rNo);
+    round.hasWinner = true;
+    round.cells.winner.textContent = names()[winner];
+
+    // render a line item for round win with delete-only-round button
+    const li = document.createElement('li');
+    li.className = 'evitem';
+    li.innerHTML = `
+      <span class="evtext">${text}</span>
+      <button class="trash" title="Delete round payout">🗑️</button>
+    `;
+    round.cells.evList.appendChild(li);
+
+    li.querySelector('.trash').onclick = () => {
+      // reverse only the round payout (winnerDelta)
+      for(const k of ['p1','p2','p3','p4']) {
+        round.delta[k] -= round.winnerDelta[k];
+      }
+      applyTotals(round.winnerDelta, -1);
+      updateRoundRowNumbers(rNo);
+      round.hasWinner = false;
+      round.winnerDelta = { p1:0,p2:0,p3:0,p4:0 };
+      round.cells.winner.textContent = '—';
+      li.remove();
+      maybeRemoveEmptyRound(rNo);
+      // do NOT adjust currentRound counter; keeps logic simple and fast
+    };
+
+    // round is now completed
+    currentRound = rNo;
   }
-  
-  // ======== Reset All Rounds ========
+
+  // ----- Reset -----
   function resetAllRounds(){
-    if(!confirm("Are you sure you want to reset all rounds?")) return;
-    document.querySelector("#scoreTable tbody").innerHTML='';
-    roundNumber=0;
-    totals={p1:0,p2:0,p3:0,p4:0};
-    updateTotals();
+    if(!confirm('Reset everything?')) return;
+    const tbody = document.querySelector('#scoreTable tbody');
+    tbody.innerHTML = '';
+    for(const k of Object.keys(rounds)) delete rounds[k];
+    currentRound = 0;
+    totals = { p1:0,p2:0,p3:0,p4:0 };
+    updateTotalsDisplay();
+    document.getElementById('whoPaysWho').innerHTML = '';
   }
 
+  // ----- Settlement -----
   function calculateSettlement(){
-  const divideBy = parseInt(document.getElementById('dividePayout').value);
-  const names = getPlayerNames();
-  
-  // Prepare balances after dividing
-  let balances = {
-    p1: (totals.p1 / divideBy),
-    p2: (totals.p2 / divideBy),
-    p3: (totals.p3 / divideBy),
-    p4: (totals.p4 / divideBy)
-  };
-
-  // Separate creditors and debtors
-  let creditors = [], debtors = [];
-  for(let p in balances){
-    const amt = parseFloat(balances[p].toFixed(2));
-    if(amt > 0) creditors.push({player:p, amount:amt});
-    else if(amt < 0) debtors.push({player:p, amount:-amt}); // store positive for calculation
+    const divide = parseInt(document.getElementById('divide').value)||1;
+    const ns = names();
+    const balances = [
+      { id:'p1', name: ns.p1, bal: totals.p1/divide },
+      { id:'p2', name: ns.p2, bal: totals.p2/divide },
+      { id:'p3', name: ns.p3, bal: totals.p3/divide },
+      { id:'p4', name: ns.p4, bal: totals.p4/divide },
+    ];
+    const debtors  = balances.filter(b=>b.bal<0).sort((a,b)=>a.bal-b.bal);
+    const creditors= balances.filter(b=>b.bal>0).sort((a,b)=>b.bal-a.bal);
+    const lines = [];
+    let i=0,j=0;
+    while(i<debtors.length && j<creditors.length){
+      const d = debtors[i], c = creditors[j];
+      const pay = Math.min(-d.bal, c.bal);
+      lines.push(`<span style="color:red;">${d.name}</span> pays <span style="color:green;">${c.name}</span> $${fmt(pay)}`);
+      d.bal += pay;
+      c.bal -= pay;
+      if(Math.abs(d.bal)<0.005) i++;
+      if(Math.abs(c.bal)<0.005) j++;
+    }
+    document.getElementById('whoPaysWho').innerHTML = lines.length ? lines.join('<br>') : 'All settled!';
   }
-
-  const results = [];
-
-  let cIndex = 0;
-  let dIndex = 0;
-
-  while(dIndex < debtors.length && cIndex < creditors.length){
-    let debtor = debtors[dIndex];
-    let creditor = creditors[cIndex];
-
-    let pay = Math.min(debtor.amount, creditor.amount);
-    pay = parseFloat(pay.toFixed(2));
-
-    results.push(`<span style="color:red;">${names[debtor.player]}</span> pays <span style="color:green;">${names[creditor.player]}</span> $${pay}`);
-
-    debtor.amount -= pay;
-    creditor.amount -= pay;
-
-    if(debtor.amount <= 0.001) dIndex++;
-    if(creditor.amount <= 0.001) cIndex++;
-  }
-
-  // Display results
-  const container = document.getElementById('whoPaysWho');
-  container.innerHTML = results.join('<br>');
-}
-  </script>
-  </body>
-  </html>
+</script>
+</body>
+</html>
