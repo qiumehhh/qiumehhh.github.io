@@ -389,12 +389,14 @@
       detail.innerHTML = `
         <option value="own">Own Animal</option>
         <option value="pair">Animal Pair</option>
+        <option value="whole">Whole Set</option>
       `;
       timingWrap.style.display = '';
     } else if(type === 'flower'){
       detail.innerHTML = `
         <option value="own">Own Number</option>
         <option value="same">Same Number (pick payer)</option>
+        <option value="whole">Whole Set</option>
       `;
       timingWrap.style.display = '';
     } else { // gang
@@ -442,13 +444,20 @@
     const delta = { p1:0,p2:0,p3:0,p4:0 };
     let text = '';
 
-    if(type==='animal-own' || type==='animal-pair'){
+    if(type==='animal-own' || type==='animal-pair' || type==='animal-whole'){
       const amt = amtAnimal; // pair = same as own animal
       for(const p of ['p1','p2','p3','p4']){
         if(p!==player) delta[p] -= amt;
         else delta[p] += amt*3;
       }
-      text = (type==='animal-own' ? 'Animal: Own' : 'Animal: Pair') + ` (${timing}) +$${fmt(amt*3)}`;
+      if (type==='animal-own') { 
+        text = 'Animal: Own'
+      } else if  (type==='Animal: Pair')  {
+        text = "Animal: Pair"
+      } else {
+        text = "Animal: Whole Set"
+      }
+      text += ` (${timing}) +$${fmt(amt*3)}`;
     }
     else if(type==='flower-own'){
       const amt = amtFlower;
@@ -457,6 +466,14 @@
         else delta[p] += amt*3;
       }
       text = `Flower: Own Number (${timing}) +$${fmt(amt*3)}`;
+    }
+    else if(type==='flower-whole'){
+      const amt = amtFlower;
+      for(const p of ['p1','p2','p3','p4']){
+        if(p!==player) delta[p] -= amt;
+        else delta[p] += amt*3;
+      }
+      text = `Flower: Whole Set (${timing}) +$${fmt(amt*3)}`;
     }
     else if(type==='flower-same'){
       const amt = amtFlower;
@@ -501,14 +518,15 @@
     const payer      = document.getElementById('eventPayer').value;
 
     // map to internal type
-    let type = '';
-    if(evTypeBase==='animal'){
-      type = (evDetail==='pair') ? 'animal-pair' : 'animal-own';
-    } else if(evTypeBase==='flower'){
-      type = (evDetail==='same') ? 'flower-same' : 'flower-own';
-    } else {
-      type = (evDetail==='revealed') ? 'gang-revealed' : 'gang-concealed';
-    }
+    // let type = '';
+    // if(evTypeBase==='animal'){
+    //   type = (evDetail==='pair') ? 'animal-pair' : 'animal-own';
+    // } else if(evTypeBase==='flower'){
+    //   type = (evDetail==='same') ? 'flower-same' : 'flower-own';
+    // } else {
+    //   type = (evDetail==='revealed') ? 'gang-revealed' : 'gang-concealed';
+    // }
+    let type = evTypeBase + "-" + evDetail
 
     const { delta, text } = buildEventDelta({type, timing, player, shooter, payer});
 
